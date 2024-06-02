@@ -30,20 +30,6 @@ class State(BaseModel, Base):
             for city in storage.all(City).values():
                 if city.state_id == self.id:
                     city_list.append(city)
+                except AttributeError
+                    pass
             return city_list
-
-
-
-        """ function that returns the list of City instances
-            with state_id equals to the current State.id
-        """
-       # from models import storage
-      #  important_list = []
-     #   single_cities = storage.all(City).keys()
-    #    for single_city in single_cities.values():
-   #         try:
-  #              if self.id == single_city.state_id:
- #               important_list.append(single_city)
-#           except AttributeError:
-#                pass
-#        return important_list
