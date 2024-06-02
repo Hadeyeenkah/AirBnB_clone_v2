@@ -20,12 +20,14 @@ class DBStorage:
 
     def __init__(self):
         """class initialization method"""
-
-        self.__engine = create_engine('mysql+mysqldb://{}:{}@{}/{}'.format(
-            os.getenv('HBNB_MYSQL_USER'),
-            os.getenv('HBNB_MYSQL_PWD'),
-            os.getenv('HBNB_MYSQL_HOST'),
-            os.getenv('HBNB_MYSQL_DB')), pool_pre_ping=True)
+        string = 'mysql+mysqldb://{}:{}@{}/{}'
+        user = os.getenv("HBNB_MYSQL_USER")
+        password = os.getenv("HBNB_MYSQL_PWD")
+        host = os.getenv("HBNB_MYSQL_HOST", "localhost")
+        database = os.getenv("HBNB_MYSQL_DB")
+        self.__engine = create_engine(
+            string.format(user, password, host, database, pool_pre_ping=True)
+        )
         if os.getenv("HBNB_ENV") == "test":
             Base.metadata.drop_all(self.__engine)
 
@@ -33,21 +35,19 @@ class DBStorage:
         """query on the current database session"""
         dictionary = {}
         if cls:
-            objects = self.__session.query(cls).all()
-            key = f"{obj.__class__.__name__}.{obj.id}"
-            dictionary[key] = obj
+            if type(cls) is str:
+                cls = eval(cls)
+            objects = self.__session.query(cls)
+            for obj in objects:
+                key = f"{type(obj).__name__}.{obj.id}"
+                dictionary[key] = obj
         elif not cls:
             determinant = [Place, Review, User, State, City, Amenity]
             for classing in determinant:
                 dict_session = self.__session.query(classing).all()
                 for values in dict_session:
-                    new_key = f"{values.__class__.__name__}, {values.id}"
+                    new_key = f"{type(values).__name__}, {values.id}"
                     dictionary[new_key] = values
-        return dictionary
-
-        for obj in objects:
-            key = f"{obj.__class__.__name__}.{obj.id}"
-            dictionary[key] = obj
         return dictionary
 
     def new(self, obj):
@@ -66,12 +66,10 @@ class DBStorage:
     def reload(self):
         """create all tables in the database"""
         Base.metadata.create_all(self.__engine)
-        session_factory = sessionmaker(bind=self.__engine,
-                                       expire_on_commit=False)
-        Session = scoped_session(session_factory)
+        Session = orm.scoped_session(orm.sessionmaker(
+            bind=self.__engine, expire_on_commit=False))
         self.__session = Session()
 
     def close(self):
-        """ close method """
-        if self.__session:
-            self.__session.close()
+        """ closes the current session """
+        self.__session.close()
