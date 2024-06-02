@@ -68,3 +68,6 @@ class FileStorage:
             del FileStorage.__objects[aimed_key]
         elif not obj:
             pass
+    def close(self):
+        """Call reload() method for deserializing the JSON file to objects"""
+        self.reload()
