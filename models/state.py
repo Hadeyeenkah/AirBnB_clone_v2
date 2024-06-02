@@ -3,7 +3,10 @@
 from models.base_model import Base, BaseModel
 from sqlalchemy import String, Column, orm
 from os import getenv
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String
 
+Base = declarative_base()
 
 class State(BaseModel, Base):
     """ State class """

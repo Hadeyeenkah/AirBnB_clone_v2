@@ -69,7 +69,14 @@ class DBStorage:
         Session = orm.scoped_session(orm.sessionmaker(
             bind=self.__engine, expire_on_commit=False))
         self.__session = Session()
+storage_type = os.getenv('HBNB_TYPE_STORAGE')
 
+if storage_type == 'db':
+    storage = DBStorage()
+else:
+    storage = FileStorage()
+
+storage.reload()
     def close(self):
         """ closes the current session """
         self.__session.close()
