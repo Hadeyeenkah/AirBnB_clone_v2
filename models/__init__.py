@@ -11,7 +11,7 @@ from models.review import Review
 from models.user import User
 from models.place import Place
 from models.engine.db_storage import DBStorage
-from models.engine.file_storage important FileStorage
+from models.engine.file_storage import FileStorage
 
 storage_type = os.getenv('HBNB_TYPE_STORAGE')
 

@@ -1,39 +1,37 @@
 #!/usr/bin/python3
-""" State Module for HBNB project """
-from models.base_model import Base, BaseModel
-from sqlalchemy import String, Column, orm
+""" holds class State"""
+import models
+from models.base_model import BaseModel, Base
 from os import getenv
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, String
+from sqlalchemy.orm import relationship
 
-Base = declarative_base()
 
 class State(BaseModel, Base):
-    """ State class """
-    __tablename__ = "states"
-    arg1 = "state"
-    arg2 = "all, delete-orphan"
-    name = Column(String(128), nullable=False)
-    cities = orm.relationship("City", backref=arg1, cascade=arg2)
+    """Representation of state """
+    __tablename__ = 'states'
+    if getenv('HBNB_TYPE_STORAGE') == 'db':
+        name = Column(String(128),
+                      nullable=False)
+        cities = relationship("City", cascade="all, delete",
+                              backref="states")
+    else:
+        name = ""
 
-    import models
-    if models.engine_storage == "fs":
-        def __init__(self, *args, **kwargs):
-            """ State class initialization """
-            self.name = kwargs['name']
-            kwargs = {}
-            super().__init__()
+    def __init__(self, *args, **kwargs):
+        """initializes state"""
+        super().__init__(*args, **kwargs)
 
-    if models.engine_storage != "db":
+    if getenv('HBNB_TYPE_STORAGE') != 'db':
         @property
         def cities(self):
-            """ function that returns the list of City instances
-                with state_id equals to the current State.id
-            """
-            from models import storage
-            important_list = []
-            single_cities = storage.all(City).values()
-            for single_city in single_cities:
-                if self.id == city.state_id:
-                    important_list.append(city)
-            return important_list
+            """fs getter attribute that returns City instances"""
+            values_city = models.storage.all().items()
+            list_city = []
+            for key, city in values_city:
+                try:
+                    if city.state_id == self.id:
+                        list_city.append(city)
+                except AttributeError:
+                    pass
+            return list_city
